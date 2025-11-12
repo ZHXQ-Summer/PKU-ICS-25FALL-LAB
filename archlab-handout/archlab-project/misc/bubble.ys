@@ -1,0 +1,58 @@
+#王泽恺 2400013155
+	.pos 0
+	irmovq	stack,%rsp
+	call main
+	halt
+
+	.align 8
+array:
+	.quad 0xbca
+	.quad 0xcba
+	.quad 0xacb
+	.quad 0xcab
+	.quad 0xabc
+	.quad 0xbac
+	
+################################################################################
+# You may want to modify this portion
+bubble_a:
+	irmovq $8,%r8
+	irmovq $1,%r9
+	rrmovq %rdi,%rcx
+	rrmovq %rsi,%r10
+	subq %r9,%r10
+rcx_loop:
+	addq %r8,%rcx
+	subq %r9,%r10
+	jg rcx_loop
+out_loop:
+	rrmovq %rdi,%rdx
+in_loop:
+	mrmovq (%rdx),%r11
+	mrmovq 8(%rdx),%r12
+	rrmovq %r11,%r13
+	subq %r12,%r13
+	jle no_swap
+	rrmovq %r12,%r13
+	rrmovq %r11,%r12
+	rmmovq %r12,8(%rdx)
+	rmmovq %r13,(%rdx)
+no_swap:
+	addq %r8,%rdx
+	rrmovq %rcx,%r10
+	subq %rdx,%r10
+	jg in_loop
+	subq %r8,%rcx
+	rrmovq %rcx,%r10
+	subq %rdi,%r10
+	jg out_loop
+	ret
+
+main:
+	irmovq array,%rdi
+	irmovq $6,%rsi
+	call bubble_a
+	ret
+
+	.pos 0x200
+stack:

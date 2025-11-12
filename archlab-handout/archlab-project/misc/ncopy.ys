@@ -1,0 +1,151 @@
+################################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Include your name and ID here.
+#王泽恺 2400013155
+# Describe how and why you modified the baseline code.
+#使用八路循环展开和二分查找余数的方法进行了加速
+#除此之外通过在iaddq指令中直接使用立即数避免了使用irmovq指令加载常数，从而减少了指令数
+#并且在opq指令和jxx指令中插入xxmovq指令，减少了数据冒险带来的停顿
+################################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+################################################################################
+# You can modify this portion
+    iaddq $-8,%rdx
+    jl handle_rem
+loop_unroll:
+    mrmovq (%rdi),%r8
+    mrmovq 8(%rdi),%r9
+    mrmovq 16(%rdi),%r10
+    mrmovq 24(%rdi),%r11
+    mrmovq 32(%rdi),%r12
+    mrmovq 40(%rdi),%r13
+    mrmovq 48(%rdi),%r14
+    mrmovq 56(%rdi),%rcx
+   # process r8
+    andq %r8,%r8
+    rmmovq %r8,(%rsi)
+    jle LU1
+    iaddq $1,%rax
+LU1:
+    andq %r9,%r9
+    rmmovq %r9,8(%rsi)
+    jle LU2
+    iaddq $1,%rax
+LU2:
+    andq %r10,%r10
+    rmmovq %r10,16(%rsi)
+    jle LU3
+    iaddq $1,%rax
+LU3:
+    andq %r11,%r11
+    rmmovq %r11,24(%rsi)
+    jle LU4
+    iaddq $1,%rax
+LU4:
+    andq %r12,%r12
+    rmmovq %r12,32(%rsi)
+    jle LU5
+    iaddq $1,%rax
+LU5:
+    andq %r13,%r13
+    rmmovq %r13,40(%rsi)
+    jle LU6
+    iaddq $1,%rax
+LU6:
+    andq %r14,%r14
+    rmmovq %r14,48(%rsi)
+    jle LU7
+    iaddq $1,%rax
+LU7:
+    andq %rcx,%rcx
+    rmmovq %rcx,56(%rsi)
+    jle LU8
+    iaddq $1,%rax
+LU8:
+    iaddq $64,%rdi
+    iaddq $64,%rsi
+    iaddq $-8,%rdx
+    andq %rdx,%rdx
+    jge loop_unroll
+handle_rem:
+    iaddq $4,%rdx
+    jl bi_r03
+bi_r47:
+    iaddq $-2,%rdx
+    jl bi_r45
+bi_r67:
+    mrmovq 40(%rdi),%r8
+    je bi_r6
+    mrmovq 48(%rdi),%r8
+    jmp bi_r7
+bi_r45:
+    iaddq $1,%rdx
+    mrmovq 32(%rdi),%r8
+    je bi_r5
+    mrmovq 24(%rdi),%r8
+    jmp bi_r4
+bi_r03:#[-2,1]
+    iaddq $2,%rdx
+    jl bi_r01
+bi_r23:
+    mrmovq 8(%rdi),%r8
+    je bi_r2
+    mrmovq 16(%rdi),%r8
+    jmp bi_r3
+bi_r01:
+    iaddq $1,%rdx
+    mrmovq (%rdi),%r8
+    je bi_r1
+    jmp done
+bi_r7:
+    andq %r8,%r8
+    rmmovq %r8,48(%rsi)
+    mrmovq 40(%rdi),%r8
+    jle bi_r6
+    iaddq $1,%rax
+bi_r6:
+    andq %r8,%r8
+    rmmovq %r8,40(%rsi)
+    mrmovq 32(%rdi),%r8
+    jle bi_r5
+    iaddq $1,%rax
+bi_r5:
+    andq %r8,%r8
+    rmmovq %r8,32(%rsi)
+    mrmovq 24(%rdi),%r8
+    jle bi_r4
+    iaddq $1,%rax
+bi_r4:
+    andq %r8,%r8
+    rmmovq %r8,24(%rsi)
+    mrmovq 16(%rdi),%r8
+    jle bi_r3
+    iaddq $1,%rax
+bi_r3:
+    andq %r8,%r8
+    rmmovq %r8,16(%rsi)
+    mrmovq 8(%rdi),%r8
+    jle bi_r2
+    iaddq $1,%rax
+bi_r2:
+    andq %r8,%r8
+    rmmovq %r8,8(%rsi)
+    mrmovq (%rdi),%r8
+    jle bi_r1
+    iaddq $1,%rax
+bi_r1:
+    andq %r8,%r8
+    rmmovq %r8,(%rsi)
+    jle done
+    iaddq $1,%rax
+done:
+    ret
+
+# In grader, we will add a "trap: jmp trap" here, which traps your program in an
+# infinite loop. Thus your function should always return instead of falling
+# through till the end of the source code :)

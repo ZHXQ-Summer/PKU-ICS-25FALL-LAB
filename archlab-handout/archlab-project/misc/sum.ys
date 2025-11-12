@@ -1,0 +1,43 @@
+# As you've got familiar with Y86 after writting your first y86 code
+# (bubble.ys), this code is left blank for you :)
+#王泽恺 2400013155
+ 	.pos 0 
+	irmovq stack, %rsp  	# Set up stack pointer  
+	call main		# Execute main program
+	halt			# Terminate program 
+
+# 示例链表（按8字节对齐）
+.align 8
+ele1:    # 第一个链表节点
+.quad 0x00d  # 指向第二个节点（ele2）的指针（8字节）
+.quad ele2 # 节点存储的值（8字节，十六进制）
+ele2:    # 第二个链表节点
+.quad 0x0e0 # 节点存储的值（8字节，十六进制）
+.quad ele3  # 指向第三个节点（ele3）的指针（8字节）
+ele3:    # 第三个链表节点
+.quad 0xf00 # 节点存储的值（8字节，十六进制）
+.quad 0     # 指向空地址（表示链表结尾）
+
+main:
+	irmovq ele1,%rdi	
+	call sum_list		# absSum(array, 4)
+	ret 
+sum_list:
+    pushq %rbx
+    xorq %rax,%rax
+    jmp test
+
+loop:
+    mrmovq (%rdi),%rsi
+    addq %rsi,%rax
+    mrmovq 8(%rdi),%rdi
+
+test:
+    andq %rdi,%rdi
+    jne loop
+    popq %rbx
+    ret
+
+# The stack starts here and grows to lower addresses
+	.pos 0x200		
+stack:	
